@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Details - LG Smart Factory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        :root { --prof-red: #C70851; --charcoal: #333333; --light-bg: #F8F9FA; }
+        body { background-color: var(--light-bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .company-header { background-color: var(--charcoal); padding: 15px 0; border-bottom: 4px solid var(--prof-red); color: white; }
+        .machine-info-bar { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .file-card { background: white; border: none; border-radius: 15px; transition: all 0.3s ease; height: 100%; border-bottom: 4px solid #ddd; }
+        .file-card:hover { transform: translateY(-8px); border-bottom: 4px solid var(--prof-red); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .bi-icon { font-size: 3rem; color: var(--prof-red); margin-bottom: 15px; }
+        .btn-view { background-color: var(--prof-red); color: white; border-radius: 25px; font-weight: 600; padding: 8px 20px; text-decoration: none; display: inline-block; transition: 0.3s; }
+        .btn-view:hover { background-color: var(--charcoal); color: white; }
+        .not-available { color: #999; font-style: italic; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <nav class="company-header shadow-sm">
+        <div class="container d-flex align-items-center">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Company Logo" style="height: 80px; margin-right: 15px;">
+            <div>
+                <h6 class="m-0 fw-bold text-uppercase">LG Electronics India</h6>
+                <small style="color: #bbb; font-size: 0.7rem;">Digital Machine Documentation</small>
+            </div>
+            <a href="/user/home" class="ms-auto btn btn-outline-light btn-sm rounded-pill px-3">
+                <i class="bi bi-qr-code-scan"></i> New Scan
+            </a>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+       <div class="machine-info-bar text-center">
+    {% if m %}
+        <h1 class="fw-bold text-dark mb-1">{{ m.m_name }}</h1>
+        <span class="badge bg-secondary px-3 py-2">SERIAL ID: {{ m.m_id }}</span>
+    {% else %}
+        <h1 class="fw-bold text-danger">Machine Not Found</h1>
+    {% endif %}
+           {% if m.manual %}
+    <a href="{{ url_for('static', filename='uploads/' + m.manual) }}" target="_blank" class="btn-view">OPEN PDF</a>
+{% else %}
+    <span class="not-available">Not Uploaded</span>
+{% endif %}
+           {% if m.ppt %}
+    <a href="{{ url_for('static', filename='uploads/' + m.ppt) }}" target="_blank" class="btn-view">VIEW PPT</a>
+{% else %}
+    <span class="not-available">Not Uploaded</span>
+{% endif %}
+        {% if m.image %}
+    <a href="{{ url_for('static', filename='uploads/' + m.image) }}" target="_blank" class="btn-view">VIEW IMAGE</a>
+{% else %}
+    <span class="not-available">Not Uploaded</span>
+{% endif %}
+            {% if m.video %}
+    <a href="{{ url_for('static', filename='uploads/' + m.video) }}" target="_blank" class="btn-view">PLAY VIDEO</a>
+{% else %}
+    <span class="not-available">Not Uploaded</span>
+{% endif %}
+
+</div>
+    </div>
+
+
