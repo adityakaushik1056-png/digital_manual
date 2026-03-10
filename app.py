@@ -151,6 +151,9 @@ def add_machine():
 
         # Debug print
         print("Inserted machine:", m_id, m_name, manual, ppt, image, video)
+        print("Received:", m_id, m_name)
+        print("Files:", manual, ppt, image, video)
+
 
         # Generate QR Code
         qr_dir = os.path.join(app.root_path, "static", "qrcodes")
@@ -236,4 +239,5 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
