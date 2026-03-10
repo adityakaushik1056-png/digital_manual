@@ -157,7 +157,10 @@ def add_machine():
         os.makedirs(qr_dir, exist_ok=True)
         filename_safe = f"{m_id.replace(' ', '_')}.png"
         qr_path = os.path.join(qr_dir, filename_safe)
-        machine_url = url_for('machine_view', m_id=m_id, _external=True)
+        
+        # Use your Render domain instead of localhost
+        machine_url = f"https://digital-manual.onrender.com/machine/{m_id}"
+        
         qr_img = qrcode.make(machine_url)
         qr_img.save(qr_path)
 
@@ -233,3 +236,4 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
