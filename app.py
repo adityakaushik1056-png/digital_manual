@@ -120,63 +120,62 @@ def delete_user(user_id):
 
 @app.route('/admin/add_machine', methods=['POST'])
 def add_machine():
-    if session.get('role') == 'admin':
-        m_id = request.form['m_id']
-        m_name = request.form['m_name']
+    if session.get('role') != 'admin':
+        return redirect('/')
 
-        upload_dir = os.path.join(app.root_path, "static", "uploads")
-        os.makedirs(upload_dir, exist_ok=True)
+    m_id = request.form.get('m_id')
+    m_name = request.form.get('m_name')
 
-        manual = None
-        ppt = None
-        image = None
-        video = None
+    manual = request.files.get('manual')
+    ppt = request.files.get('ppt')
+    image = request.files.get('image')
+    video = request.files.get('video')
 
-        # Save each file separately
-        if 'manual' in request.files and request.files['manual'].filename:
-            manual = request.files['manual'].filename
-            request.files['manual'].save(os.path.join(upload_dir, manual))
+    # Ensure upload directories exist
+    upload_dir = os.path.join(app.root_path, 'static/uploads')
+    qr_dir = os.path.join(app.root_path, 'static/qrcodes')
+    os.makedirs(upload_dir, exist_ok=True)
+    os.makedirs(qr_dir, exist_ok=True)
 
-        if 'ppt' in request.files and request.files['ppt'].filename:
-            ppt = request.files['ppt'].filename
-            request.files['ppt'].save(os.path.join(upload_dir, ppt))
+    # Save files only if provided
+    manual_filename = None
+    ppt_filename = None
+    image_filename = None
+    video_filename = None
 
-        if 'image' in request.files and request.files['image'].filename:
-            image = request.files['image'].filename
-            request.files['image'].save(os.path.join(upload_dir, image))
+    if manual and manual.filename.strip():
+        manual_filename = manual.filename
+        manual.save(os.path.join(upload_dir, manual_filename))
 
-        if 'video' in request.files and request.files['video'].filename:
-            video = request.files['video'].filename
-            request.files['video'].save(os.path.join(upload_dir, video))
+    if ppt and ppt.filename.strip():
+        ppt_filename = ppt.filename
+        ppt.save(os.path.join(upload_dir, ppt_filename))
 
-        # Debug print
-        print("Inserted machine:", m_id, m_name, manual, ppt, image, video)
-        print("Received:", m_id, m_name)
-        print("Files:", manual, ppt, image, video)
+    if image and image.filename.strip():
+        image_filename = image.filename
+        image.save(os.path.join(upload_dir, image_filename))
 
+    if video and video.filename.strip():
+        video_filename = video.filename
+        video.save(os.path.join(upload_dir, video_filename))
 
-        # Generate QR Code
-        qr_dir = os.path.join(app.root_path, "static", "qrcodes")
-        os.makedirs(qr_dir, exist_ok=True)
-        filename_safe = f"{m_id.replace(' ', '_')}.png"
-        qr_path = os.path.join(qr_dir, filename_safe)
-        
-        # Use your Render domain instead of localhost
-        machine_url = f"https://digital-manual.onrender.com/machine/{m_id}"
-        
-        qr_img = qrcode.make(machine_url)
-        qr_img.save(qr_path)
+    # Insert into DB
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (?, ?, ?, ?, ?, ?)",
+        (m_id, m_name, manual_filename, ppt_filename, image_filename, video_filename)
+    )
+    conn.commit()
+    conn.close()
 
-        # Insert into DB
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (?, ?, ?, ?, ?, ?)",
-                       (m_id, m_name, manual, ppt, image, video))
-        conn.commit()
-        conn.close()
+    # Generate QR code with Render domain
+    machine_url = f"https://yourapp.onrender.com/machine/{m_id}"  # replace with your actual Render domain
+    img = qrcode.make(machine_url)
+    img.save(os.path.join(qr_dir, f"{m_id}.png"))
 
-        return redirect(url_for('admin_dash'))
-    return redirect(url_for('index'))
+    # Redirect back to admin dashboard
+    return redirect(url_for('admin_dash'))
 
 @app.route('/admin/delete_machine/<m_id>', methods=['POST'])
 def delete_machine(m_id):
@@ -239,5 +238,6 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
 
