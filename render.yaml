@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: digital-manual
-    env: python
-    plan: free
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    environment:
-      pythonVersion: 3.11.9
