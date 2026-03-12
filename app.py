@@ -159,7 +159,7 @@ def add_machine():
         video_filename = video.filename
         video.save(os.path.join(upload_dir, video_filename))
 
-    # Insert into DB
+    # Insert into DB with duplicate check
     conn = get_db()
     cursor = conn.cursor()
     try:
@@ -170,7 +170,7 @@ def add_machine():
         conn.commit()
     except sqlite3.IntegrityError:
         conn.close()
-        return "Machine ID already exists! <a href='/admin/dashboard'>Go Back</a>"
+        return "❌ Machine ID already exists! <a href='/admin/dashboard'>Go Back</a>"
     conn.close()
 
     # Generate QR Code
@@ -185,6 +185,7 @@ def add_machine():
 
     # Redirect back to admin dashboard
     return redirect(url_for('admin_dash'))
+
 
 @app.route('/admin/delete_machine/<m_id>', methods=['POST'])
 def delete_machine(m_id):
@@ -247,6 +248,7 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
 
 
