@@ -1,4 +1,4 @@
-import sqlite3, qrcode
+import sqlite3, qrcode ,threading
 from flask import Flask, render_template, request, redirect, url_for, session
 import os
 
@@ -118,6 +118,8 @@ def delete_user(user_id):
 
 
 
+import threading
+
 @app.route('/admin/add_machine', methods=['POST'])
 def add_machine():
     if session.get('role') != 'admin':
@@ -131,41 +133,17 @@ def add_machine():
     image = request.files.get('image')
     video = request.files.get('video')
 
-    # Ensure upload directories exist
-    upload_dir = os.path.join(app.root_path, 'static/uploads')
-    qr_dir = os.path.join(app.root_path, 'static/qrcodes')
-    os.makedirs(upload_dir, exist_ok=True)
-    os.makedirs(qr_dir, exist_ok=True)
-
-    # Save files only if provided
-    manual_filename = None
-    ppt_filename = None
-    image_filename = None
-    video_filename = None
-
-    if manual and manual.filename.strip():
-        manual_filename = manual.filename
-        manual.save(os.path.join(upload_dir, manual_filename))
-
-    if ppt and ppt.filename.strip():
-        ppt_filename = ppt.filename
-        ppt.save(os.path.join(upload_dir, ppt_filename))
-
-    if image and image.filename.strip():
-        image_filename = image.filename
-        image.save(os.path.join(upload_dir, image_filename))
-
-    if video and video.filename.strip():
-        video_filename = video.filename
-        video.save(os.path.join(upload_dir, video_filename))
-
-    # Insert into DB with duplicate check
+    # Insert into DB first (fast)
     conn = get_db()
     cursor = conn.cursor()
     try:
         cursor.execute(
             "INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (?, ?, ?, ?, ?, ?)",
-            (m_id, m_name, manual_filename, ppt_filename, image_filename, video_filename)
+            (m_id, m_name,
+             manual.filename if manual and manual.filename.strip() else None,
+             ppt.filename if ppt and ppt.filename.strip() else None,
+             image.filename if image and image.filename.strip() else None,
+             video.filename if video and video.filename.strip() else None)
         )
         conn.commit()
     except sqlite3.IntegrityError:
@@ -173,17 +151,33 @@ def add_machine():
         return "❌ Machine ID already exists! <a href='/admin/dashboard'>Go Back</a>"
     conn.close()
 
-    # Generate QR Code
-    filename_safe = f"{m_id.replace(' ', '_')}.png"
-    qr_path = os.path.join(qr_dir, filename_safe)
+    # Background task for file saving + QR generation
+    def background_task():
+        upload_dir = os.path.join(app.root_path, 'static/uploads')
+        qr_dir = os.path.join(app.root_path, 'static/qrcodes')
+        os.makedirs(upload_dir, exist_ok=True)
+        os.makedirs(qr_dir, exist_ok=True)
 
-    # Dynamic domain (works locally and on Render)
-    machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
+        if manual and manual.filename.strip():
+            manual.save(os.path.join(upload_dir, manual.filename))
+        if ppt and ppt.filename.strip():
+            ppt.save(os.path.join(upload_dir, ppt.filename))
+        if image and image.filename.strip():
+            image.save(os.path.join(upload_dir, image.filename))
+        if video and video.filename.strip():
+            video.save(os.path.join(upload_dir, video.filename))
 
-    qr_img = qrcode.make(machine_url)
-    qr_img.save(qr_path)
+        filename_safe = f"{m_id.replace(' ', '_')}.png"
+        qr_path = os.path.join(qr_dir, filename_safe)
+        machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
+        qr_img = qrcode.make(machine_url)
+        qr_img.save(qr_path)
 
-    # Redirect back to admin dashboard
+        print(f"✅ Background task finished for machine {m_id}")
+
+    threading.Thread(target=background_task).start()
+
+    # Immediate response
     return redirect(url_for('admin_dash'))
 
 
@@ -248,6 +242,7 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
 
 
