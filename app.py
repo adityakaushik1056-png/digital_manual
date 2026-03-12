@@ -169,10 +169,17 @@ def add_machine():
     conn.commit()
     conn.close()
 
-    # Generate QR code with Render domain
-    machine_url = f"https://yourapp.onrender.com/machine/{m_id}"  # replace with your actual Render domain
-    img = qrcode.make(machine_url)
-    img.save(os.path.join(qr_dir, f"{m_id}.png"))
+   # Generate QR Code
+qr_dir = os.path.join(app.root_path, "static", "qrcodes")
+os.makedirs(qr_dir, exist_ok=True)
+filename_safe = f"{m_id.replace(' ', '_')}.png"
+qr_path = os.path.join(qr_dir, filename_safe)
+
+# Dynamic domain (works locally and on Render)
+machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
+
+qr_img = qrcode.make(machine_url)
+qr_img.save(qr_path)
 
     # Redirect back to admin dashboard
     return redirect(url_for('admin_dash'))
@@ -238,6 +245,7 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
 
 
