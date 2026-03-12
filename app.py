@@ -162,24 +162,26 @@ def add_machine():
     # Insert into DB
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (?, ?, ?, ?, ?, ?)",
-        (m_id, m_name, manual_filename, ppt_filename, image_filename, video_filename)
-    )
-    conn.commit()
+    try:
+        cursor.execute(
+            "INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (?, ?, ?, ?, ?, ?)",
+            (m_id, m_name, manual_filename, ppt_filename, image_filename, video_filename)
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        return "Machine ID already exists! <a href='/admin/dashboard'>Go Back</a>"
     conn.close()
 
-   # Generate QR Code
-qr_dir = os.path.join(app.root_path, "static", "qrcodes")
-os.makedirs(qr_dir, exist_ok=True)
-filename_safe = f"{m_id.replace(' ', '_')}.png"
-qr_path = os.path.join(qr_dir, filename_safe)
+    # Generate QR Code
+    filename_safe = f"{m_id.replace(' ', '_')}.png"
+    qr_path = os.path.join(qr_dir, filename_safe)
 
-# Dynamic domain (works locally and on Render)
-machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
+    # Dynamic domain (works locally and on Render)
+    machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
 
-qr_img = qrcode.make(machine_url)
-qr_img.save(qr_path)
+    qr_img = qrcode.make(machine_url)
+    qr_img.save(qr_path)
 
     # Redirect back to admin dashboard
     return redirect(url_for('admin_dash'))
@@ -245,6 +247,7 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
 
 
