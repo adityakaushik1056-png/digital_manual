@@ -72,13 +72,13 @@
                     <tbody>
                       {% for m in machines %}
                       <tr>
-                        <td>{{ m.m_id }}</td>
-                        <td>{{ m.m_name }}</td>
+                        <td>{{ m['m_id'] }}</td>
+                        <td>{{ m['m_name'] }}</td>
 
                         <!-- Manual -->
                         <td>
-                          {% if m.manual %}
-                            <a href="{{ url_for('static', filename='uploads/' + m.manual) }}" target="_blank">View</a>
+                          {% if m['manual'] %}
+                            <a href="{{ url_for('static', filename='uploads/' ~ m['manual']) }}" target="_blank">View</a>
                           {% else %}
                             <span class="text-muted">N/A</span>
                           {% endif %}
@@ -86,8 +86,8 @@
 
                         <!-- PPT -->
                         <td>
-                          {% if m.ppt %}
-                            <a href="{{ url_for('static', filename='uploads/' + m.ppt) }}" target="_blank">View</a>
+                          {% if m['ppt'] %}
+                            <a href="{{ url_for('static', filename='uploads/' ~ m['ppt']) }}" target="_blank">View</a>
                           {% else %}
                             <span class="text-muted">N/A</span>
                           {% endif %}
@@ -95,8 +95,8 @@
 
                         <!-- Image -->
                         <td>
-                          {% if m.image %}
-                            <a href="{{ url_for('static', filename='uploads/' + m.image) }}" target="_blank">View</a>
+                          {% if m['image'] %}
+                            <a href="{{ url_for('static', filename='uploads/' ~ m['image']) }}" target="_blank">View</a>
                           {% else %}
                             <span class="text-muted">N/A</span>
                           {% endif %}
@@ -104,8 +104,8 @@
 
                         <!-- Video -->
                         <td>
-                          {% if m.video %}
-                            <a href="{{ url_for('static', filename='uploads/' + m.video) }}" target="_blank">Play</a>
+                          {% if m['video'] %}
+                            <a href="{{ url_for('static', filename='uploads/' ~ m['video']) }}" target="_blank">Play</a>
                           {% else %}
                             <span class="text-muted">N/A</span>
                           {% endif %}
@@ -113,16 +113,16 @@
 
                         <!-- QR Code -->
                         <td>
-                          <a href="{{ url_for('static', filename='qrcodes/' + m.m_id.replace(' ', '_') + '.png') }}" download>
+                          <a href="{{ url_for('static', filename='qrcodes/' ~ m['m_id']|replace(' ', '_') ~ '.png') }}" download>
                             Download QR
                           </a>
                         </td>
 
                         <!-- Actions -->
                         <td>
-                          <a href="/machine/{{ m.m_id }}" class="btn btn-red btn-sm">View</a>
-                          <form action="/admin/delete_machine/{{ m.m_id }}" method="POST" style="display:inline;">
-                            <button class="btn btn-red btn-sm " onclick="return confirm('Are you sure you want to delete this machine?');">
+                          <a href="/machine/{{ m['m_id'] }}" class="btn btn-red btn-sm">View</a>
+                          <form action="/admin/delete_machine/{{ m['m_id'] }}" method="POST" style="display:inline;">
+                            <button class="btn btn-red btn-sm" onclick="return confirm('Are you sure you want to delete this machine?');">
                               Delete
                             </button>
                           </form>
@@ -132,8 +132,7 @@
                     </tbody>
                 </table>
                 <div>
-    <!-- New All Data Button -->
-    <a href="/admin/all_data" class="ms-auto btn btn-sm btn-red me-2">All Data</a>
+                  <a href="/admin/all_data" class="ms-auto btn btn-sm btn-red me-2">All Data</a>
                 </div>
             </div>
         </div>
