@@ -1,7 +1,7 @@
 # Use a stable Python version
 FROM python:3.11-slim
 
-# Install system dependencies required by Pillow
+# Install system dependencies required by Pillow and Postgres
 RUN apt-get update && apt-get install -y \
     build-essential \
     libjpeg-dev \
@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
     tcl8.6-dev \
     tk8.6-dev \
     python3-tk \
+    libpq-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -27,8 +29,8 @@ RUN pip install -r requirements.txt
 # Copy the rest of the code
 COPY . .
 
-# Expose port
+# Expose port (Render will set $PORT)
 EXPOSE 10000
 
-# Start command (adjust if your entrypoint file is different)
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000"]
+# Start command (use $PORT for flexibility)
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:$PORT"]
