@@ -83,13 +83,15 @@ def login():
 def admin_dash():
     if session.get('role') != 'admin':
         return redirect('/')
-    conn = get_db()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute("SELECT * FROM machines")
-    machines = cursor.fetchall()
-    conn.close()
-    return render_template('admin_dash.html', machines=machines)
-
+    try:
+        conn = get_db()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT * FROM machines")
+        machines = cursor.fetchall()
+        conn.close()
+        return render_template('admin_dash.html', machines=machines)
+    except Exception as e:
+        return f"Error in dashboard: {e}"
 
 @app.route('/admin/add_user', methods=['POST'])
 def add_user():
