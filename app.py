@@ -1,6 +1,5 @@
-import sqlite3, qrcode
+import sqlite3, qrcode, os
 from flask import Flask, render_template, request, redirect, url_for, session
-import os
 
 app = Flask(__name__)
 app.secret_key = "industrial_secret"
@@ -105,6 +104,7 @@ def add_user():
         return redirect(url_for('admin_dash'))
     return redirect(url_for('index'))
 
+
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     if session.get('role') == 'admin':
@@ -113,12 +113,9 @@ def delete_user(user_id):
         cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
         conn.commit()
         conn.close()
-        return redirect(url_for('all_data'))
+        return redirect(url_for('admin_dash'))  # fixed redirect
     return redirect(url_for('index'))
 
-
-
-import threading
 
 @app.route('/admin/add_machine', methods=['POST'])
 def add_machine():
@@ -171,7 +168,7 @@ def add_machine():
         conn.commit()
         conn.close()
 
-        # Generate QR Code
+        # Generate QR Code with full URL
         filename_safe = f"{m_id.replace(' ', '_')}.png"
         qr_path = os.path.join(qr_dir, filename_safe)
         machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
@@ -179,6 +176,7 @@ def add_machine():
         qr_img.save(qr_path)
 
         print(f"✅ Machine added: {m_id}, {m_name}")
+        print(f"✅ QR generated: {machine_url}")
         return redirect(url_for('admin_dash'))
 
     except sqlite3.IntegrityError:
@@ -200,7 +198,6 @@ def delete_machine(m_id):
         conn.close()
         return redirect(url_for('admin_dash'))
     return redirect(url_for('index'))
-
 
 
 @app.route('/user/home')
@@ -251,11 +248,3 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
-
-
-
-
-
-
-
-
