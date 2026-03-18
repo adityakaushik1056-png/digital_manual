@@ -1,15 +1,15 @@
-import sqlite3, qrcode, os
+import psycopg2, qrcode, os
 from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = "industrial_secret"
 
-DB_FILE = "factory_app.db"
+# Render ke dashboard me DATABASE_URL env var set karo
+DB_URL = os.getenv("DATABASE_URL")
 
 # --- Database Connection ---
 def get_db():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row  # dictionary-like access
+    conn = psycopg2.connect(DB_URL)
     return conn
 
 # --- Initialize DB ---
@@ -20,7 +20,7 @@ def init_db():
     # Users table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )
@@ -29,7 +29,7 @@ def init_db():
     # Admins table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS admins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )
@@ -51,7 +51,7 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM admins")
     count = cursor.fetchone()[0]
     if count == 0:
-        cursor.execute("INSERT INTO admins (username, password) VALUES (?, ?)", ("admin", "admin123"))
+        cursor.execute("INSERT INTO admins (username, password) VALUES (%s, %s)", ("admin", "admin123"))
 
     conn.commit()
     conn.close()
@@ -69,7 +69,7 @@ def login():
     cursor = conn.cursor()
     table = "admins" if role == "admin" else "users"
 
-    cursor.execute(f"SELECT * FROM {table} WHERE username=? AND password=?", (uname, pword))
+    cursor.execute(f"SELECT * FROM {table} WHERE username=%s AND password=%s", (uname, pword))
     account = cursor.fetchone()
     conn.close()
 
@@ -98,7 +98,7 @@ def add_user():
         pword = request.form['password']
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (uname, pword))
+        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (uname, pword))
         conn.commit()
         conn.close()
         return redirect(url_for('admin_dash'))
@@ -110,7 +110,7 @@ def delete_user(user_id):
     if session.get('role') == 'admin':
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
+        cursor.execute("DELETE FROM users WHERE id=%s", (user_id,))
         conn.commit()
         conn.close()
         return redirect(url_for('admin_dash'))
@@ -162,7 +162,7 @@ def add_machine():
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO machines (m_id, m_name, manual, ppt, image, video) VALUES (%s, %s, %s, %s, %s, %s)",
             (m_id, m_name, manual_filename, ppt_filename, image_filename, video_filename)
         )
         conn.commit()
@@ -182,10 +182,6 @@ def add_machine():
         print(f"✅ QR generated: {machine_url}")
         return redirect(url_for('admin_dash'))
 
-    except sqlite3.IntegrityError:
-        print(f"❌ Duplicate machine ID: {m_id}")
-        return "Machine ID already exists! <a href='/admin/dashboard'>Go Back</a>"
-
     except Exception as e:
         print(f"❌ Error while adding machine: {e}")
         return f"Error: {e}"
@@ -196,7 +192,7 @@ def delete_machine(m_id):
     if session.get('role') == 'admin':
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM machines WHERE m_id=?", (m_id,))
+        cursor.execute("DELETE FROM machines WHERE m_id=%s", (m_id,))
         conn.commit()
         conn.close()
         return redirect(url_for('admin_dash'))
@@ -214,7 +210,7 @@ def user_home():
 def machine_view(m_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM machines WHERE m_id=?", (m_id,))
+    cursor.execute("SELECT * FROM machines WHERE m_id=%s", (m_id,))
     m = cursor.fetchone()
     conn.close()
     if not m:
