@@ -91,7 +91,9 @@ def admin_dash():
         conn.close()
         return render_template('admin_dash.html', machines=machines)
     except Exception as e:
+        # Show the exact error instead of generic 500
         return f"Error in dashboard: {e}"
+
 
 @app.route('/admin/add_user', methods=['POST'])
 def add_user():
