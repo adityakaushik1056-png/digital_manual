@@ -168,10 +168,11 @@ def add_machine():
         conn.commit()
         conn.close()
 
-        # Generate QR Code with full URL
+        # Generate QR Code with your Render URL
         filename_safe = f"{m_id.replace(' ', '_')}.png"
         qr_path = os.path.join(qr_dir, filename_safe)
-        machine_url = request.host_url.rstrip('/') + url_for('machine_view', m_id=m_id)
+        BASE_URL = "https://digital-manual.onrender.com"
+        machine_url = BASE_URL + url_for('machine_view', m_id=m_id)
         qr_img = qrcode.make(machine_url)
         qr_img.save(qr_path)
 
