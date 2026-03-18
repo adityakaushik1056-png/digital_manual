@@ -64,19 +64,21 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    uname, pword, role = request.form['username'], request.form['password'], request.form['role']
-    conn = get_db()
-    cursor = conn.cursor()
-    table = "admins" if role == "admin" else "users"
+    try:
+        uname, pword, role = request.form['username'], request.form['password'], request.form['role']
+        conn = get_db()
+        cursor = conn.cursor()
+        table = "admins" if role == "admin" else "users"
+        cursor.execute(f"SELECT * FROM {table} WHERE username=%s AND password=%s", (uname, pword))
+        account = cursor.fetchone()
+        conn.close()
+        if account:
+            session['username'], session['role'] = uname, role
+            return redirect(url_for('admin_dash' if role == 'admin' else 'user_home'))
+        return "Invalid Credentials! <a href='/'>Try Again</a>"
+    except Exception as e:
+        return f"Login error: {e}"
 
-    cursor.execute(f"SELECT * FROM {table} WHERE username=%s AND password=%s", (uname, pword))
-    account = cursor.fetchone()
-    conn.close()
-
-    if account:
-        session['username'], session['role'] = uname, role
-        return redirect(url_for('admin_dash' if role == 'admin' else 'user_home'))
-    return "Invalid Credentials! <a href='/'>Try Again</a>"
 
 
 @app.route('/admin/dashboard')
@@ -247,7 +249,7 @@ def logout():
     session.clear()
     return redirect('/')
 
+     init_db()
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
