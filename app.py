@@ -168,17 +168,20 @@ def add_machine():
         conn.commit()
         conn.close()
 
-        # Generate QR Code with your Render URL
-        filename_safe = f"{m_id.replace(' ', '_')}.png"
-        qr_path = os.path.join(qr_dir, filename_safe)
-        BASE_URL = "https://digital-manual.onrender.com"
-        machine_url = BASE_URL + url_for('machine_view', m_id=m_id)
-        qr_img = qrcode.make(machine_url)
-        qr_img.save(qr_path)
+    # Generate QR Code with your Render URL
+filename_safe = f"{m_id.replace(' ', '_')}.png"
+qr_path = os.path.join(qr_dir, filename_safe)
 
-        print(f"✅ Machine added: {m_id}, {m_name}")
-        print(f"✅ QR generated: {machine_url}")
-        return redirect(url_for('admin_dash'))
+# Hardcode your deployed URL
+BASE_URL = "https://digital-manual.onrender.com"
+machine_url = BASE_URL + url_for('machine_view', m_id=m_id)
+
+qr_img = qrcode.make(machine_url)
+qr_img.save(qr_path)
+
+print(f"✅ QR generated: {machine_url}")
+ return redirect(url_for('admin_dash'))
+
 
     except sqlite3.IntegrityError:
         print(f"❌ Duplicate machine ID: {m_id}")
