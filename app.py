@@ -1,4 +1,4 @@
-import psycopg2, qrcode, os
+import psycopg2, psycopg2.extras, qrcode, os
 from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
@@ -84,7 +84,7 @@ def admin_dash():
     if session.get('role') != 'admin':
         return redirect('/')
     conn = get_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT * FROM machines")
     machines = cursor.fetchall()
     conn.close()
@@ -209,7 +209,7 @@ def user_home():
 @app.route('/machine/<m_id>')
 def machine_view(m_id):
     conn = get_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT * FROM machines WHERE m_id=%s", (m_id,))
     m = cursor.fetchone()
     conn.close()
@@ -223,7 +223,7 @@ def all_data():
     if session.get('role') != 'admin':
         return redirect('/')
     conn = get_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("SELECT * FROM users")
     users = cursor.fetchall()
