@@ -1,0 +1,66 @@
+
+# Factory Machine Documentation System
+
+## 📌 Overview
+The Factory Machine Documentation System is a **Flask‑based web application** designed to centralize machine documentation in industrial environments. It allows administrators to register machines, upload manuals, PPTs, images, and videos, and automatically generate QR codes for quick access. Users can log in or scan QR codes to instantly retrieve machine‑specific resources, ensuring efficiency and reducing downtime.
+
+---
+
+## 🚀 Features
+- **Secure Login System** for Admins and Users  
+- **Admin Dashboard** to register machines, upload files, and generate QR codes  
+- **User Dashboard** to view assigned machines and access documentation  
+- **QR Code Integration** for instant mobile access to manuals and training files  
+- **PostgreSQL Database** for persistent storage of machine details and user credentials  
+- **Responsive Frontend** built with HTML, CSS, and Bootstrap  
+- **Cloud Deployment** on Render for accessibility and scalability  
+
+---
+
+## 🛠️ Tech Stack
+- **Backend:** Python, Flask  
+- **Frontend:** HTML, CSS, Bootstrap  
+- **Database:** PostgreSQL  
+- **Libraries:** qrcode, psycopg2, Jinja2  
+- **Deployment:** Render  
+- **Version Control:** Git  
+
+---
+
+## 📂 Project Modules
+- **Login Module:** Role‑based authentication for Admins and Users  
+- **Admin Module:** User management, machine registration, file uploads, QR generation  
+- **User Module:** Dashboard access to machines and documentation  
+- **Machine Module:** Organized display of manuals, PPTs, images, and videos  
+- **Database Module:** Persistent storage and CRUD operations in PostgreSQL  
+
+---
+
+## 🔄 Workflow
+1. **Start → Login (Admin/User)**  
+2. **Admin Dashboard → Register machines, upload files, generate QR codes**  
+3. **Database Storage → Save machine details, file paths, and credentials**  
+4. **User Dashboard → Access assigned machines**  
+5. **QR Code Scan → Direct access to machine documentation**  
+6. **End → Centralized, secure access achieved**  
+
+---
+
+## 📈 Future Scope
+- Cloud storage integration (AWS S3, Google Drive)  
+- Role‑based permissions for supervisors and technicians  
+- AI/GenAI‑powered intelligent search in manuals  
+- Analytics dashboard for usage insights  
+- Multi‑language support for diverse workforces  
+- Mobile app adaptation for shop‑floor technicians  
+- IoT integration for real‑time machine data  
+
+---
+
+## 📖 References
+- [Flask Documentation](https://flask.palletsprojects.com)  
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)  
+- [Bootstrap Documentation](https://getbootstrap.com)  
+- [Render Deployment Guide](https://render.com/docs)  
+
+---
